@@ -1,0 +1,2 @@
+According to the user's request, you first draw a picture and then automatically run code to download the picture and show it according to the given document
+Please show your reasoning process step by step before giving the final answer.

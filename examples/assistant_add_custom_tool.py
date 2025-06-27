@@ -17,9 +17,9 @@
 import json
 import os
 import urllib.parse
+import base64
 
 import json5
-
 from qwen_agent.agents import Assistant
 from qwen_agent.gui import WebUI
 from qwen_agent.tools.base import BaseTool, register_tool
@@ -27,43 +27,139 @@ from qwen_agent.tools.base import BaseTool, register_tool
 ROOT_RESOURCE = os.path.join(os.path.dirname(__file__), 'resource')
 
 
-# Add a custom tool named my_image_gen：
-@register_tool('my_image_gen')
-class MyImageGen(BaseTool):
-    description = 'AI painting (image generation) service, input text description, and return the image URL drawn based on text information.'
-    parameters = [{
-        'name': 'prompt',
-        'type': 'string',
-        'description': 'Detailed description of the desired image content, in English',
-        'required': True,
-    }]
+# 更简单的 MCP 图片生成工具
+@register_tool('mcp_image_gen')
+class MCPImageGen(BaseTool):
+    description = 'Call MCP service to generate image and save as file automatically.'
+    parameters = [
+        {
+            'name': 'prompt',
+            'type': 'string',
+            'description': 'Text description of the image to generate.',
+            'required': True
+        },
+        {
+            'name': 'width',
+            'type': 'integer',
+            'description': 'Width of the image to generate.',
+            'required': False
+        },
+        {
+            'name': 'height',
+            'type': 'integer',
+            'description': 'Height of the image to generate.',
+            'required': False
+        },
+        {
+            'name': 'steps',
+            'type': 'integer',
+            'description': 'Steps of the image to generate.',
+            'required': False,
+        },
+        {
+            'name': 'guidance_scale',
+            'type': 'float',
+            'description': 'Guidance scale of the image to generate.',
+            'required': False,
+        }
+    ]
 
     def call(self, params: str, **kwargs) -> str:
-        prompt = json5.loads(params)['prompt']
-        prompt = urllib.parse.quote(prompt)
-        return json.dumps(
-            {'image_url': f'https://image.pollinations.ai/prompt/{prompt}'},
-            ensure_ascii=False,
-        )
+        import time
+        import asyncio
+        from qwen_agent.tools.mcp_manager import MCPManager
+        
+        args = json.loads(params)
+        prompt = args['prompt']
+        
+        try:
+            # 获取 MCP 管理器
+            mcp_manager = MCPManager()
+            
+            # 假设你的 MCP 服务有一个名为 'generate_image' 的工具
+            # 你需要根据实际的 MCP 工具名称调整
+            target_tool_name = 'generate_image'  # 替换为你的实际工具名
+            
+            # 查找目标工具
+            target_client = None
+            target_tool = None
+            
+            for client_id, client in mcp_manager.clients.items():
+                if hasattr(client, 'tools') and client.tools:
+                    for tool in client.tools:
+                        if tool.name == target_tool_name:
+                            target_client = client
+                            target_tool = tool
+                            break
+                    if target_client:
+                        break
+            
+            if not target_client:
+                return "Error: MCP image generation tool not found"
+            
+            # 调用 MCP 工具
+            tool_args = {"prompt": prompt}
+            future = asyncio.run_coroutine_threadsafe(
+                target_client.execute_function(target_tool_name, tool_args),
+                mcp_manager.loop
+            )
+            
+            # 获取结果
+            result = future.result()
+            
+            # 假设结果包含 base64 数据
+            # 你需要根据实际返回格式调整解析逻辑
+            if isinstance(result, str):
+                base64_str = result
+            else:
+                # 如果结果是 JSON 或其他格式，需要解析
+                base64_str = str(result)
+            
+            # 保存为文件
+            timestamp = int(time.time())
+            filename = f"mcp_generated_{timestamp}.png"
+            
+            if ',' in base64_str:
+                base64_str = base64_str.split(',')[1]
+            
+            with open(filename, 'wb') as f:
+                f.write(base64.b64decode(base64_str))
+            
+            return f"Image generated via MCP and saved as: {filename}"
+            
+        except Exception as e:
+            return f"Error calling MCP service: {str(e)}"
 
 
 def init_agent_service():
-    llm_cfg = {'model': 'qwen-max'}
-    system = ("According to the user's request, you first draw a picture and then automatically "
-              'run code to download the picture and select an image operation from the given document '
-              'to process the image')
+    llm_cfg = { 'model': 'qwen-max-latest',
+               'model_type': 'qwen_dashscope',
+               'api_key': 'sk-20140248ea1544d0855b515aac4a576b'}
+    system = ("You are an AI assistant that generates images. When you need to generate an image: "
+              "1. Use the 'smart_image_gen' tool to generate and save the image as a file. "
+              "2. The tool will return a file path instead of base64 data. "
+              "3. Use the file path with code_interpreter to process the image. "
+              "4. Never pass large base64 strings to code_interpreter - always use file paths.")
 
     tools = [
-        'my_image_gen',
+        'mcp_image_gen',    # 直接调用 MCP 服务生成图片
         'code_interpreter',
-    ]  # code_interpreter is a built-in tool in Qwen-Agent
+        {
+            "mcpServers": {
+                "demo":{
+                    "type":"sse",
+                    "url": "http://10.240.243.203:30505/sse"
+                    }
+                }
+        }
+    ]
     bot = Assistant(
         llm=llm_cfg,
         name='AI painting',
         description='AI painting service',
         system_message=system,
         function_list=tools,
-        files=[os.path.join(ROOT_RESOURCE, 'doc.pdf')],
+        files=[os.path.join(ROOT_RESOURCE, 'guide.md')],
     )
 
     return bot
