@@ -35,9 +35,11 @@ def read_system_prompt():
 
 
 def init_agent_service():
-    llm_cfg = { 'model': 'qwen-max-latest',
-               'model_type': 'qwen_dashscope',
-               'api_key': 'sk-20140248ea1544d0855b515aac4a576b'}
+    llm_cfg = {
+        'model': '/models/Qwen3-32B/Qwen3-32B',
+        'model_server': 'http://10.240.243.203:30038/v1',  # base_url，也称为 api_base
+        'api_key': 'EMPTY'
+    }
     system = read_system_prompt()
 
     tools = [
@@ -55,9 +57,12 @@ def init_agent_service():
         llm=llm_cfg,
         name='AI painting',
         description='AI painting service',
-        system_message=system + "\nPlease show your reasoning process step by step before giving the final answer.",
+        system_message=system,
         function_list=tools,
-        files=[os.path.join(ROOT_RESOURCE, 'guide.md')],
+        files=[
+            os.path.join(ROOT_RESOURCE, 'proceed_img_guide.md'),
+            os.path.join(ROOT_RESOURCE, 'flux_tool_guide.md')
+        ],
     )
 
     return bot
@@ -101,7 +106,7 @@ def app_gui():
     WebUI(
         bot,
         chatbot_config=chatbot_config,
-    ).run()
+    ).run(server_name="0.0.0.0",erver_port=7860)
 
 
 if __name__ == '__main__':

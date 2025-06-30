@@ -1,0 +1,183 @@
+[
+  {
+    "page_num": 1,
+    "content": [
+      {
+        "text": "# Python Image Processing Tutorial: Downloading Images and Performing Show Operations",
+        "token": 13
+      },
+      {
+        "text": "In this tutorial, we will learn how to download images using Python and perform basic image",
+        "token": 17
+      },
+      {
+        "text": "operations such as flipping and rotating using the Pillow library.",
+        "token": 11
+      },
+      {
+        "text": "## Prerequisites",
+        "token": 3
+      },
+      {
+        "text": "Before we begin, make sure you have the following libraries installed in your Python environment:",
+        "token": 17
+      },
+      {
+        "text": "- `requests`: for downloading images",
+        "token": 7
+      },
+      {
+        "text": "- `Pillow`: for image processing",
+        "token": 8
+      },
+      {
+        "text": "If you haven't installed these libraries yet, you can install them using pip:",
+        "token": 16
+      },
+      {
+        "text": "```bash",
+        "token": 2
+      },
+      {
+        "text": "pip install requests Pillow",
+        "token": 4
+      },
+      {
+        "text": "```",
+        "token": 1
+      },
+      {
+        "text": "## Step 1: Downloading an Image",
+        "token": 9
+      },
+      {
+        "text": "First, we need to download an image. We will use the `requests` library to accomplish this task.",
+        "token": 22
+      },
+      {
+        "text": "```",
+        "token": 1
+      },
+      {
+        "text": "import requests",
+        "token": 2
+      },
+      {
+        "text": "def download_image(url, filename):",
+        "token": 7
+      },
+      {
+        "text": "    response = requests.get(url)",
+        "token": 7
+      },
+      {
+        "text": "    if response.status_code == 200:",
+        "token": 11
+      },
+      {
+        "text": "        with open(filename, 'wb') as file:",
+        "token": 11
+      },
+      {
+        "text": "        file.write(response.content)",
+        "token": 6
+      },
+      {
+        "text": "\telse:",
+        "token": 2
+      },
+      {
+        "text": "\t\tprint(f\"Error: Failed to download image from {url}\")",
+        "token": 14
+      },
+      {
+        "text": "",
+        "token": 0
+      },
+      {
+        "text": "# Example usage",
+        "token": 3
+      },
+      {
+        "text": "image_url = \"https://example.com/image.jpg\" # Replace with the URL of the image you want to download",
+        "token": 23
+      },
+      {
+        "text": "filename = \"downloaded_image.jpg\"",
+        "token": 8
+      },
+      {
+        "text": "download_image(image_url, filename)",
+        "token": 7
+      },
+      {
+        "text": "```",
+        "token": 1
+      },
+      {
+        "text": "## Step 2: Opening and Displaying the Image",
+        "token": 11
+      },
+      {
+        "text": "Next, we will use the `Pillow` library to open and display the image we just downloaded.",
+        "token": 21
+      },
+      {
+        "text": "```",
+        "token": 1
+      },
+      {
+        "text": "from PIL import Image",
+        "token": 4
+      },
+      {
+        "text": "def open_and_show_image(filename):",
+        "token": 7
+      },
+      {
+        "text": "image = Image.open(filename)",
+        "token": 6
+      },
+      {
+        "text": "image.show()",
+        "token": 3
+      },
+      {
+        "text": "# Example usage",
+        "token": 3
+      },
+      {
+        "text": "open_and_show_image(filename)",
+        "token": 6
+      },
+      {
+        "text": "```",
+        "token": 1
+      },
+      {
+        "text": "",
+        "token": 0
+      },
+      {
+        "text": "",
+        "token": 0
+      },
+      {
+        "text": "By now, you have learned how to download images using Python and perform basic image",
+        "token": 16
+      },
+      {
+        "text": "operations using the Pillow library. You can extend these basics to implement more complex image",
+        "token": 16
+      },
+      {
+        "text": "processing functions as needed.",
+        "token": 5
+      },
+      {
+        "text": "",
+        "token": 0
+      }
+    ]
+  }
+]
