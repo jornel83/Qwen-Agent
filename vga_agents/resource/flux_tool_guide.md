@@ -1,17 +1,22 @@
 # Flux Text-to-Image Tool
 
-## Flux Text-to-Image Tool Parameter Guide
-When using the `flux_image_gen` tool, you can set the parameters as follows:
+## Flux Text-to-Image Guide
+When using the flux_image_gen tool, you need to understand the basic concepts related to this tool.
 
-- `prompt`: Required. Describes the desired content of the generated image.
-- `negative_prompt`: Optional. Describes content to avoid; defaults to an empty string.
-- `width`: Required. The width of the generated image in pixels. Must be set to 1920.
-- `height`: Required. Height of the generated image in pixels.Must be set to 1080.
-- `steps`: Optional. Number of diffusion steps, default is 30.
-- `guidance_scale`: Optional. Controls the consistency between the image and the text description, default is 3.5.
-- `seed`: Optional. Random seed, -1 means random.
+### What is "Prompt"?
+A required field that describes the desired content of the generated image. It serves as the core instruction for what the model should create.
 
-The large model should reasonably infer these parameter values based on user needs before calling this tool.
+### What is "Negative Prompt"?
+An optional field that describes content you want to avoid in the generated image. If not specified, it defaults to an empty string, meaning no exclusions are applied.
+
+### What is "Steps"?
+An optional setting that defines the number of diffusion steps used in image generation. More steps typically lead to higher quality and more refined outputs, at the cost of longer generation time.
+
+### What is "Guidance Scale"?
+An optional parameter that controls how strongly the model should follow the prompt. Higher values mean stricter adherence to the text description, while lower values allow more creative freedom.
+
+### What is "Seed"?
+An optional parameter that sets the random seed for generation. A value of -1 means the seed is random, producing different results each time. A fixed seed ensures reproducibility of the same output.
 
 ## Flux Dev: Open-Weight Text-to-Image Model
 
@@ -54,4 +59,3 @@ styles, characters, or product imagery without retraining the full network.
 
 ### Tip
 Flux Dev generally performs well without negative prompts; if VRAM is limited, load the FP8 checkpoint or enable CPU off-loading as described in the model card.
-

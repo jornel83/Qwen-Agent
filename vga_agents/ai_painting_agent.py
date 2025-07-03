@@ -46,11 +46,15 @@ def init_agent_service():
         'code_interpreter',
         {
             "mcpServers": {
-                "demo":{
-                    "type":"sse",
-                    "url": "http://10.240.243.203:30505/sse"
-                    }
+                "text2image": {
+                    "type": "sse",
+                    "url": "http://10.240.243.203:30787/sse"
+                },
+                "image_editing": {
+                    "type": "sse",
+                    "url": "http://10.240.243.203:32074/sse"
                 }
+            }
         }
     ]  # code_interpreter is a built-in tool in Qwen-Agent
     bot = Assistant(
@@ -106,7 +110,7 @@ def app_gui():
     WebUI(
         bot,
         chatbot_config=chatbot_config,
-    ).run(server_name="0.0.0.0",erver_port=7860)
+    ).run(server_name="0.0.0.0", erver_port=7860)
 
 
 if __name__ == '__main__':
