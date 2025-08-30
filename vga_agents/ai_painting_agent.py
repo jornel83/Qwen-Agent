@@ -14,16 +14,16 @@
 
 """An image generation agent implemented by assistant"""
 
-import json
 import os
-import urllib.parse
 
-import json5
-import pathlib
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from qwen_agent.agents import Assistant
 from qwen_agent.gui import WebUI
-from qwen_agent.tools.base import BaseTool, register_tool
+from dotenv import load_dotenv
+load_dotenv()
+
 
 ROOT_RESOURCE = os.path.join(os.path.dirname(__file__), 'resource')
 SYSTEM_PROMPT_PATH = os.path.join(os.path.dirname(__file__), 'system_prompt.md')
@@ -35,37 +35,45 @@ def read_system_prompt():
 
 
 def init_agent_service():
-    llm_cfg = {
-        'model': '/models/Qwen3-32B/Qwen3-32B',
-        'model_server': 'http://10.240.243.203:30038/v1',  # base_url，也称为 api_base
-        'api_key': 'EMPTY'
-    }
+    # llm_cfg = {
+    #     'model': '/models/Qwen3-32B/Qwen3-32B',
+    #     'model_server': 'http://10.240.243.203:30038/v1',  # base_url，也称为 api_base
+    #     'api_key': 'EMPTY'
+    # }
+    #
+    llm_cfg = { 'model': 'qwen-max-latest',
+               'model_type': 'qwen_dashscope',
+               'api_key': 'sk-20140248ea1544d0855b515aac4a576b'}
     system = read_system_prompt()
 
+    # tools = [
+    #     'code_interpreter',
+    #     'video_gen',
+    #     {
+    #         "mcpServers": {
+    #             "text2image": {
+    #                 "type": "sse",
+    #                 "url": "http://10.240.243.203:30787/sse"
+    #             },
+    #             "image_editing": {
+    #                 "type": "sse",
+    #                 "url": "http://10.240.243.203:32074/sse"
+    #             }
+    #         }
+    #     }
+    # ]
     tools = [
-        'code_interpreter',
-        {
-            "mcpServers": {
-                "text2image": {
-                    "type": "sse",
-                    "url": "http://10.240.243.203:30787/sse"
-                },
-                "image_editing": {
-                    "type": "sse",
-                    "url": "http://10.240.243.203:32074/sse"
-                }
-            }
-        }
-    ]  # code_interpreter is a built-in tool in Qwen-Agent
+
+    ]
+    # code_interpreter is a built-in tool in Qwen-Agent
     bot = Assistant(
         llm=llm_cfg,
-        name='AI painting',
-        description='AI painting service',
+        name='AI HMI Agent',
+        description='动态生成AI HMI的智能体',
         system_message=system,
         function_list=tools,
         files=[
-            os.path.join(ROOT_RESOURCE, 'proceed_img_guide.md'),
-            os.path.join(ROOT_RESOURCE, 'flux_tool_guide.md')
+            os.path.join(ROOT_RESOURCE, 'proceed_img_guide.md')
         ],
     )
 
@@ -105,6 +113,7 @@ def app_gui():
             '画一只猫的图片',
             '画一只可爱的小腊肠狗',
             '画一幅风景画，有湖有山有树',
+            '生成一张分辨率是3200*900的桌面壁纸，3D可爱卡通风'
         ]
     }
     WebUI(

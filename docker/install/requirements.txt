@@ -1,28 +1,59 @@
-dashscope>=1.20.1
-faiss-cpu
-grpcio
-jieba
+# 基本依赖
+dashscope>=1.11.0
+eval_type_backport
 json5
-jsonref
-jupyter>=1.0.0
-langchain
-langchain-community
-langchain-experimental
-llama-index==0.10.29
-llama-index-core==0.10.39.post1
-llama-index-readers-json
-llama-index-retrievers-bm25==0.1.5
+jsonlines
+jsonschema
 openai
-opencv-python
-openpyxl
-pdfminer.six
-Pillow
 pydantic>=2.3.0
-pytest
-pytest-mock
-python-dotenv
-requests>=2.32.3
-seaborn
-sentencepiece
+requests
 tiktoken
-unstructured
+
+# 可选依赖
+# RAG（检索增强生成）
+charset-normalizer
+rank_bm25
+jieba
+snowballstemmer
+beautifulsoup4
+pdfminer.six
+pdfplumber
+python-docx
+python-pptx
+pandas
+tabulate
+
+# MCP（模型上下文协议）
+mcp
+
+# Python执行器（主要用于解决数学问题）
+pebble
+multiprocess
+timeout_decorator
+python-dateutil
+sympy
+numpy
+scipy
+
+# 代码解释器
+anyio>=3.7.1
+fastapi>=0.103.1
+jupyter>=1.0.0
+matplotlib
+numpy
+pandas
+pillow
+seaborn
+sympy
+uvicorn>=0.23.2
+
+# Gradio基础的GUI
+pydantic==2.9.2
+pydantic-core==2.23.4
+gradio==5.23.1
+gradio-client==1.8.0
+modelscope_studio==1.1.7
+
+
+
+runpod

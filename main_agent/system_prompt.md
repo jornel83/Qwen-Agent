@@ -1,1 +1,0 @@
-According to the user's request, you first draw a picture and then automatically run code to download the picture and select an image operation from the given document to process the image

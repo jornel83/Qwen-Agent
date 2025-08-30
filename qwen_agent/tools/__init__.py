@@ -27,6 +27,7 @@ from .storage import Storage
 from .web_extractor import WebExtractor
 from .mcp_manager import MCPManager
 from .web_search import WebSearch
+from .video_gen import VideoGen
 
 __all__ = [
     'BaseTool',
@@ -48,4 +49,5 @@ __all__ = [
     'PythonExecutor',
     'MCPManager',
     'WebSearch',
+    'VideoGen',
 ]

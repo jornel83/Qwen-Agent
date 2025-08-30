@@ -15,6 +15,8 @@
 import os
 import pprint
 import re
+import shutil
+import requests
 from typing import List, Optional, Union
 
 from qwen_agent import Agent, MultiAgentHub
@@ -234,20 +236,50 @@ class WebUI:
 
         if _input.files:
             for file in _input.files:
-                if file.mime_type.startswith('image/'):
-                    _history[-1][CONTENT].append({IMAGE: 'file://' + file.path})
-                elif file.mime_type.startswith('audio/'):
-                    _history[-1][CONTENT].append({AUDIO: 'file://' + file.path})
-                elif file.mime_type.startswith('video/'):
-                    _history[-1][CONTENT].append({VIDEO: 'file://' + file.path})
-                else:
-                    _history[-1][CONTENT].append({FILE: file.path})
+                http_url = self.upload_file(file.path)
+                print("http_url:", http_url)
+
+                if http_url:
+                    if file.mime_type.startswith('image/'):
+                        _history[-1][CONTENT].append({"image": http_url})
+                    elif file.mime_type.startswith('audio/'):
+                        _history[-1][CONTENT].append({AUDIO: http_url})
+                    elif file.mime_type.startswith('video/'):
+                        _history[-1][CONTENT].append({VIDEO: http_url})
+                    else:
+                        _history[-1][CONTENT].append({FILE: http_url})                
 
         _chatbot.append([_input, None])
 
         from qwen_agent.gui.gradio_dep import gr
 
         yield gr.update(interactive=False, value=None), None, _chatbot, _history
+
+    def upload_file(self, file_path):
+        url = "http://10.240.243.203:32713/upload/"
+        try:
+            import mimetypes
+            mime_type = mimetypes.guess_type(file_path)[0] or "application/octet-stream"
+            with open(file_path, "rb") as f:
+                files = {"file": (os.path.basename(file_path), f, mime_type)}
+                response = requests.post(url, files=files)
+            print("Status code:", response.status_code)
+            try:
+                resp_json = response.json()
+                print("Response JSON:", resp_json)
+            except Exception as e:
+                print(f"Response is not valid JSON: {e}")
+                return None
+
+            # 校验 HTTP 状态码和返回内容
+            if response.status_code == 200 and isinstance(resp_json, dict) and "filename" in resp_json:
+                return f"http://10.240.243.203:32713/files/{resp_json['filename']}"
+            else:
+                print(f"Upload failed, status: {response.status_code}, response: {resp_json}")
+                return None
+        except Exception as e:
+            print(f"Error occurred during upload: {e}")
+            return None
 
     def add_mention(self, _chatbot, _agent_selector):
         if len(self.agent_list) == 1:

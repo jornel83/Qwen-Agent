@@ -324,6 +324,13 @@ def json_dumps_compact(obj: dict, ensure_ascii=False, indent=None, **kwargs) -> 
     return json.dumps(obj, ensure_ascii=ensure_ascii, indent=indent, cls=PydanticJSONEncoder, **kwargs)
 
 
+def _preserve_url_or_basename(f):
+    # 如果是 http(s) 或 data:，直接保留原始字符串，否则只取文件名
+    if isinstance(f, str) and (f.startswith("http://") or f.startswith("https://") or f.startswith("data:")):
+        return f
+    return get_basename_from_url(f)
+
+
 def format_as_multimodal_message(
     msg: Message,
     add_upload_info: bool,
@@ -367,27 +374,28 @@ def format_as_multimodal_message(
             else:
                 has_zh = (lang == 'zh')
             upload = []
-            for f, k in [(get_basename_from_url(f), k) for f, k in files]:
+            for f, k in files:
+                url_or_name = _preserve_url_or_basename(f)
                 if k == 'image':
                     if has_zh:
-                        upload.append(f'![图片]({f})')
+                        upload.append(f'![图片]({url_or_name})')
                     else:
-                        upload.append(f'![image]({f})')
+                        upload.append(f'![image]({url_or_name})')
                 elif k == 'video':
                     if has_zh:
-                        upload.append(f'![视频]({f})')
+                        upload.append(f'![视频]({url_or_name})')
                     else:
-                        upload.append(f'![video]({f})')
+                        upload.append(f'![video]({url_or_name})')
                 elif k == 'audio':
                     if has_zh:
-                        upload.append(f'![音频]({f})')
+                        upload.append(f'![音频]({url_or_name})')
                     else:
-                        upload.append(f'![audio]({f})')
+                        upload.append(f'![audio]({url_or_name})')
                 else:
                     if has_zh:
-                        upload.append(f'[文件]({f})')
+                        upload.append(f'[文件]({url_or_name})')
                     else:
-                        upload.append(f'[file]({f})')
+                        upload.append(f'[file]({url_or_name})')
             upload = ' '.join(upload)
             if has_zh:
                 upload = f'（上传了 {upload}）\n\n'

@@ -14,9 +14,12 @@
 
 import copy
 import json
+import logging
 import traceback
 from abc import ABC, abstractmethod
 from typing import Dict, Iterator, List, Optional, Tuple, Union
+
+from pprint import pformat
 
 from qwen_agent.llm import get_chat_model
 from qwen_agent.llm.base import BaseChatModel
@@ -167,13 +170,38 @@ class Agent(ABC):
         Yields:
             The response generator of LLM.
         """
-        return self.llm.chat(messages=messages,
-                             functions=functions,
-                             stream=stream,
-                             extra_generate_cfg=merge_generate_cfgs(
-                                 base_generate_cfg=self.extra_generate_cfg,
-                                 new_generate_cfg=extra_generate_cfg,
-                             ))
+        # return self.llm.chat(messages=messages,
+        #                      functions=functions,
+        #                      stream=stream,
+        #                      extra_generate_cfg=merge_generate_cfgs(
+        #                          base_generate_cfg=self.extra_generate_cfg,
+        #                          new_generate_cfg=extra_generate_cfg,
+        #                      ))
+        merged_cfg = merge_generate_cfgs(base_generate_cfg=self.extra_generate_cfg,
+                                         new_generate_cfg=extra_generate_cfg)
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug(f'LLM call messages:\n{pformat([m.model_dump() for m in messages], indent=2)}')
+            if functions:
+                logger.debug(f'Functions:\n{pformat(functions, indent=2)}')
+            if extra_generate_cfg:
+                logger.debug(f'Extra generate cfg:\n{pformat(extra_generate_cfg, indent=2)}')
+        output = self.llm.chat(messages=messages,
+                               functions=functions,
+                               stream=stream,
+                               extra_generate_cfg=merged_cfg)
+
+        if isinstance(output, list):
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug(f'LLM Output chunk:\n{pformat([m.model_dump() for m in output], indent=2)}')
+            return output
+
+        def _log_and_yield():
+            for chunk in output:
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.debug(f'LLM Output chunk:\n{pformat([m.model_dump() for m in chunk], indent=2)}')
+                yield chunk
+
+        return _log_and_yield()
 
     def _call_tool(self, tool_name: str, tool_args: Union[str, dict] = '{}', **kwargs) -> Union[str, List[ContentItem]]:
         """The interface of calling tools for the agent.

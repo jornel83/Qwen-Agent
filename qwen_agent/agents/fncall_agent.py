@@ -13,6 +13,8 @@
 # limitations under the License.
 
 import copy
+import logging
+from pprint import pformat
 from typing import Dict, Iterator, List, Literal, Optional, Union
 
 from qwen_agent import Agent
@@ -22,6 +24,7 @@ from qwen_agent.memory import Memory
 from qwen_agent.settings import MAX_LLM_CALL_PER_RUN
 from qwen_agent.tools import BaseTool
 from qwen_agent.utils.utils import extract_files_from_messages
+from qwen_agent.log import logger
 
 
 class FnCallAgent(Agent):
@@ -77,6 +80,10 @@ class FnCallAgent(Agent):
         while True and num_llm_calls_available > 0:
             num_llm_calls_available -= 1
 
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug('Calling LLM with messages:\n%s',
+                             pformat([m.model_dump() for m in messages], indent=2))
+                
             extra_generate_cfg = {'lang': lang}
             if kwargs.get('seed') is not None:
                 extra_generate_cfg['seed'] = kwargs['seed']
@@ -94,6 +101,8 @@ class FnCallAgent(Agent):
                 for out in output:
                     use_tool, tool_name, tool_args, _ = self._detect_tool(out)
                     if use_tool:
+                        if logger.isEnabledFor(logging.DEBUG):
+                            logger.debug('Calling tool `%s` with args: %s', tool_name, tool_args)
                         tool_result = self._call_tool(tool_name, tool_args, messages=messages, **kwargs)
                         fn_msg = Message(
                             role=FUNCTION,

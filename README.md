@@ -273,6 +273,11 @@ We have released [a fast RAG solution](https://github.com/QwenLM/Qwen-Agent/blob
 
 BrowserQwen is a browser assistant built upon Qwen-Agent. Please refer to its [documentation](https://github.com/QwenLM/Qwen-Agent/blob/main/browser_qwen.md) for details.
 
+## Debug Logging
+
+Set the environment variable `QWEN_AGENT_DEBUG=1` before running your code to
+enable detailed debug logs about LLM and tool calls.
+
 # Disclaimer
 
 The code interpreter is not sandboxed, and it executes code in your own environment. Please do not ask Qwen to perform dangerous tasks, and do not directly use the code interpreter for production purposes.
